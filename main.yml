@@ -1,0 +1,16 @@
+---
+- name: Install and setup
+  hosts: all
+  become: true
+  roles:
+    - docker_setup
+    - nginx_proxy
+    - youtrack_setup
+
+- name: Transfer latest backup
+  hosts: localhost
+  vars:
+    src_host: put_src_IP
+    dest_host: put_dst_IP
+  roles:
+    - role: youtrack_backup
