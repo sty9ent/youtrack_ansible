@@ -1,0 +1,25 @@
+---
+- name: Find the latest backup archive
+  find:
+    paths: "{{ backup_path }}"
+    file_type: file
+    age: -1d
+    recurse: yes
+  register: latest_files
+  delegate_to: "{{ src_host }}"
+
+- name: Fetch the latest backup to Ansible controller
+  fetch:
+    src: "{{ latest_files.files | sort(attribute='mtime', reverse=True) | map(attribute='path') | first }}"
+    dest: "{{ temp_dest_on_controller }}"
+  register: fetched_file
+  delegate_to: "{{ src_host }}"
+
+- name: Copy the latest backup to the destination server
+  become: yes
+  copy:
+    src: "{{ fetched_file.dest }}"
+    dest: "{{ backup_path }}"
+    owner: 13001
+    group: 13001
+  delegate_to: "{{ dest_host }}" 

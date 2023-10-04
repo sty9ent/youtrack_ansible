@@ -1,0 +1,57 @@
+---
+- name: Create YouTrack directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: 13001
+    group: 13001
+    mode: 0755
+  with_items:
+    - /opt/youtrack/data
+    - /opt/youtrack/conf
+    - /opt/youtrack/logs
+    - /opt/youtrack/backups
+
+- name: Run YouTrack Docker container
+  docker_container:
+    name: youtrack
+    image: "jetbrains/youtrack:{{ youtrack_version }}"
+    pull: yes
+    state: started
+    restart_policy: always
+    ports:
+      - "8080:8080"
+    volumes:
+      - "/opt/youtrack/data:/opt/youtrack/data"
+      - "/opt/youtrack/conf:/opt/youtrack/conf"
+      - "/opt/youtrack/logs:/opt/youtrack/logs"
+      - "/opt/youtrack/backups:/opt/youtrack/backups"
+    networks:
+      - name: mynetwork
+  notify:
+    restart nginx
+
+# Get token only on first playbook run
+
+- name: Check if marker file exists
+  stat:
+    path: "/tmp/get_token"
+  register: token_provided
+
+- name: Get token
+  command: docker exec youtrack cat /opt/youtrack/conf/internal/services/configurationWizard/wizard_token.txt 
+  register: token_value 
+  when: not token_provided.stat.exists
+  retries: 5
+  delay: 5
+
+- name: Create marker file
+  file:
+    path: "/tmp/get_token"
+    state: touch
+  when: not token_provided.stat.exists
+
+- name: Display Youtrack token
+  debug:
+    var: token_value.stdout
+  when: not token_provided.stat.exists

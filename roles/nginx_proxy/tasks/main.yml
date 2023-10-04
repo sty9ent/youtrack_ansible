@@ -1,0 +1,42 @@
+---
+- name: Ensure SSL directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  with_items:
+    - /opt/ssl/certs
+    - /opt/ssl/private
+
+- name: Create self-signed certificate
+  command:
+    cmd: >
+      openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /opt/ssl/private/selfsigned.key 
+      -out /opt/ssl/certs/selfsigned.crt 
+      -subj "/C=UA/ST=Kiyvska/L=Kiyv/O=MyOrg/OU=MyDept/CN=mydomain.com" -nodes
+    creates: /opt/ssl/certs/selfsigned.crt
+
+- name: Copy nginx configuration to remote host
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/nginx.conf"
+    dest: "/opt/nginx.conf"
+    owner: 101
+    group: 101
+    mode: '0644'
+
+- name: Run Nginx container
+  docker_container:
+    name: nginx_proxy
+    image: nginx:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/opt/ssl/certs:/etc/ssl/certs:ro"
+      - "/opt/ssl/private:/etc/ssl/private:ro"
+      - "/opt/nginx.conf:/etc/nginx/nginx.conf:ro"
+    state: started
+    networks:
+      - name: mynetwork 

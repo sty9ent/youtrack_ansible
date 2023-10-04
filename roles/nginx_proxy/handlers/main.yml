@@ -1,0 +1,7 @@
+---
+- name: restart nginx
+  docker_container:
+    name: nginx_proxy
+    image: nginx:latest
+    state: started
+    restart: yes

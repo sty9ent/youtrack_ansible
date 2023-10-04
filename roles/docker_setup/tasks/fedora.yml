@@ -1,0 +1,27 @@
+---
+- name: Install required packages
+  dnf:
+    name:
+      - dnf-utils
+      - openssl
+    state: present
+
+- name: Add Docker repo for Fedora
+  yum_repository:
+    name: docker-ce-stable
+    description: Docker CE Stable
+    baseurl: https://download.docker.com/linux/fedora/$releasever/$basearch/stable
+    enabled: 1
+    gpgcheck: 1
+    gpgkey: https://download.docker.com/linux/fedora/gpg
+
+- name: Install Docker
+  dnf:
+    name: docker-ce
+    state: present
+
+- name: Start and enable Docker service
+  systemd:
+    name: docker
+    enabled: yes
+    state: started

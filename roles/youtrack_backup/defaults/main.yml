@@ -1,0 +1,2 @@
+backup_path: "/opt/youtrack/backups"
+temp_dest_on_controller: "/tmp"

@@ -1,0 +1,14 @@
+---
+- include_tasks: redhat.yml
+  when: ansible_distribution == 'RedHat' or ansible_distribution == 'CentOS'
+
+- include_tasks: debian.yml
+  when: ansible_os_family == 'Debian'
+
+- include_tasks: fedora.yml
+  when: ansible_distribution == 'Fedora'
+
+- name: Create custom Docker network
+  docker_network:
+    name: mynetwork
+    state: present
