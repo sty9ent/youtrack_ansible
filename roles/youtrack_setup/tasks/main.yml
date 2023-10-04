@@ -42,7 +42,7 @@
   command: docker exec youtrack cat /opt/youtrack/conf/internal/services/configurationWizard/wizard_token.txt 
   register: token_value 
   when: not token_provided.stat.exists
-  retries: 5
+  retries: 10
   delay: 5
 
 - name: Create marker file
