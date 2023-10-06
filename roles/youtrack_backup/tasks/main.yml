@@ -22,4 +22,4 @@
     dest: "{{ backup_path }}"
     owner: 13001
     group: 13001
-  delegate_to: "{{ dest_host }}" 
+  delegate_to: "{{ dst_host }}" 

@@ -3,14 +3,14 @@
   hosts: all
   become: true
   roles:
-    - docker_setup
-    - nginx_proxy
-    - youtrack_setup
+    - { role: docker_setup, tags: ['main'] }
+    - { role: nginx_proxy, tags: ['main'] }
+    - { role: youtrack_setup, tags: ['main'] }
 
 - name: Transfer latest backup
   hosts: localhost
   vars:
     src_host: put_src_IP
-    dest_host: put_dst_IP
+    dst_host: put_dst_IP
   roles:
     - role: youtrack_backup
